@@ -14,6 +14,7 @@ import inir.modules.common.widgets
 import inir.modules.iris.components
 import inir.modules.iris.frame
 import inir.modules.iris.style
+import inir.modules.iris.pieces
 import inir.modules.iris.field as Field
 
 PanelWindow {
@@ -349,7 +350,9 @@ PanelWindow {
                         }
                     }
                     Repeater {
-                        model: root.options.sections ?? (root.left ? ["media", "tasks", "notes"] : ["calendar", "weather", "notifications"])
+                        // the panel's own sections, then any Ryoku plugin placed on this side (Settings › Plugins)
+                        model: Array.from(root.options.sections ?? (root.left ? ["media", "tasks", "notes"] : ["calendar", "weather", "notifications"]))
+                            .concat(IrisPieces.pluginsIn(root.side).map(id => IrisPieces.pluginPieceId(id)))
                         Loader {
                             required property string modelData
                             Layout.fillWidth: true

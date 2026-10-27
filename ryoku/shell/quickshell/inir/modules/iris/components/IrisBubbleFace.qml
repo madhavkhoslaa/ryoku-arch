@@ -51,7 +51,11 @@ Item {
     // A bar cell is its touch target; what it draws keeps the size of the bar's other marks.
     property real contentInset: 0
     readonly property bool inline: root.lane && ["notifications", "weather", "calendar", "updates"].includes(root.kind)
-    readonly property real laneWidth: root.inline ? Math.max(root.height, inlineFace.implicitWidth + 2 * Math.round(8 * root.d)) : root.height
+    readonly property real laneWidth: root.inline ? Math.max(root.height, inlineFace.implicitWidth + 2 * Math.round(8 * root.d))
+        : root.plugin ? Math.max(root.height, (pluginFace.item?.implicitWidth ?? 0) + 2 * Math.round(8 * root.d)) : root.height
+    // A Ryoku bar plugin ("plugin:<id>") draws its own mark; the face keeps the plate and the open state.
+    readonly property bool plugin: IrisPieces.isPlugin(root.kind)
+    signal pluginPanelRequested()
     // What this piece opened (its card, its page, the Control Center) is showing: the plate stays lit, as a menu bar item does.
     property bool open: false
     property color tint: root.ink
@@ -921,6 +925,20 @@ Item {
 
     ResourceUsageMonitor { target: root; active: root.kind === "vitals" }
 
+    // built only for a plugin piece, so the other faces carry no plugin host
+    Loader {
+        id: pluginFace
+        anchors.centerIn: parent
+        active: root.plugin
+        sourceComponent: IrisPluginFace {
+            pluginId: IrisPieces.pluginIdOf(root.kind)
+            s: root.d
+            // a square cell caps the mark to the cell; a lane cell grows to fit it
+            budget: root.lane ? 220 * root.d : Math.max(0, Math.min(root.width, root.height) - 2 * root.contentInset - 2 * root.platedInset)
+            onPanelRequested: root.pluginPanelRequested()
+        }
+    }
+
     Accessible.role: Accessible.Button
     Accessible.name: root.kind === "controls" ? Translation.tr("Quick controls")
         : root.kind === "notifications" ? Translation.tr("Notifications")
@@ -946,5 +964,6 @@ Item {
         : root.kind === "watching" ? Translation.tr("Continue")
         : root.kind === "shellUpdate" ? Translation.tr("New update")
         : root.kind === "vpn" ? Translation.tr("VPN")
-        : root.kind === "record" ? Translation.tr("Screen recording") : Translation.tr("Timer")
+        : root.kind === "record" ? Translation.tr("Screen recording")
+        : root.plugin ? IrisPieces.labelOf(root.kind) : Translation.tr("Timer")
 }

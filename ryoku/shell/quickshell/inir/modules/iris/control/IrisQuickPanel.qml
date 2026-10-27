@@ -10,6 +10,7 @@ import inir.modules.common.functions
 import inir.modules.common.widgets
 import inir.modules.iris.components
 import inir.modules.iris.style
+import inir.modules.iris.pieces
 
 ColumnLayout {
     id: root
@@ -258,6 +259,26 @@ ColumnLayout {
                     IrisSystemList { id: systemList; width: parent.width; visible: root.picker === "system" }
                     IrisNetworkList { id: networkList; width: parent.width; visible: root.picker === "network" }
                     IrisBluetoothList { id: bluetoothList; width: parent.width; visible: root.picker === "bluetooth" }
+                }
+            }
+
+            // Ryoku plugins placed in Control Center (Settings › Plugins): each one's panel on its own block.
+            Repeater {
+                model: IrisPieces.pluginsIn("controls")
+                Block {
+                    required property string modelData
+                    Layout.fillWidth: true
+                    implicitHeight: pluginPanel.implicitHeight + 12 * root.d
+                    IrisPluginPanel {
+                        id: pluginPanel
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 6 * root.d
+                        pluginId: modelData
+                        s: root.d
+                        active: root.visible
+                    }
                 }
             }
 

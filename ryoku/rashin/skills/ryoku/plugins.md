@@ -21,7 +21,8 @@ plugin's code to install it.
 ```
 
 Installed plugins live at `~/.local/share/ryoku/plugins/<id>/` (receipt-owned;
-never author there). The three hosts are `topbarGlyph` (a mark on the QS Bar),
+never author there). The three hosts are `topbarGlyph` (a mark on the QS Bar, or
+on Shima wherever Shima Settings > Plugins places it),
 `desktopWidget` (a tile on the wallpaper), and `framePopout` (a surface that
 grows from a screen edge, or floats centred).
 

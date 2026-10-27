@@ -244,6 +244,39 @@ with the community warning, its author, its switch and settings, and
 EXPORT / SHARE TO RYOSTORE / REMOVE. `ryoku plugin list|remove|validate`
 manage it from a terminal; see "Share it" below for export and share.
 
+#### On Shima
+
+Shima (the `iris` bar style) hosts the same `topbarGlyph` plugins, with no change
+to the plugin. Shima Settings > Plugins lists every installed bar plugin, official
+ones (`"official": true`) under Plugins and the rest under Community plugins. Each
+card has an on/off switch, and tapping it opens the plugin's settings, for now its
+Position:
+
+| Position | What the user sees |
+| --- | --- |
+| Island | your `content/Widget.qml` at `glyph` density as a piece on the resting Island (and in the menu-bar layout); a tap opens your `Panel.qml` as a card centred under the Island |
+| Home page | your `Panel.qml` in the Modules block of the page the Island opens to |
+| Control Center | your `Panel.qml` on its own block under the grid |
+| Left panel / Right panel | your `Panel.qml` as a section in Focus or Today |
+
+The four panel positions are offered only when you ship `entryPoints.panel`.
+Turning a plugin on in Shima also enables it with `host: topbarGlyph` in
+`plugins.json`. The choice is stored in Shima's own config: an Island piece is
+`plugin:<id>` in `inir.iris.bar.pieces`, the position is
+`inir.iris.plugins.places`, and switched-off plugins are listed in
+`inir.iris.plugins.off`.
+
+What differs from QS Bar:
+
+- On the Island, Shima's tap opens your panel; your glyph's own click handler
+  does not run. Put actions in the panel.
+- `widthBudget` on the Island is the piece's size (about 30 px); keep the glyph
+  to a mark and let secondary text drop.
+- A panel placed away from the Island runs your `service/Main.qml` itself; on the
+  Island the piece and its card share one instance.
+- Cards use Shima's shared card width, not `panel.width`, and
+  `pluginApi.panelOpen` stays `false`.
+
 ### 4. Sidebar card - lives in a global sidebar
 
 A `sidebarCard` plugin lives in Extensions inside Controls. It uses the same
@@ -451,7 +484,11 @@ import Ryoku.PluginKit            // Theme, Motion, GlyphIcon, MicroLabel,
 
 Use `Theme` colors and `Motion` curves - mono eyebrows, hairline dividers, the
 vermillion accent, the project's morph timing. **Don't hardcode colors**; read
-them from `Theme`. The vermillion accent is the one accent - use it sparingly.
+them from `Theme`. A bar style that hosts plugins on its own surface can retune
+`Theme.radius`, `font`, `display`, `accent`, `bright`, `dim`, `border`, `hair`
+and `tileBg` through the kit's `HostTheme` (Shima does, so your corners and faces
+match its cards). That is the host's job: never name `HostTheme` in plugin code,
+`ryoku plugin validate` blocks it as `internal-import`. The vermillion accent is the one accent - use it sparingly.
 
 Your **settings are not QML** - you declare them as a `metadata.settings` schema
 in the manifest (below) and Ryoku renders native controls for them, both in

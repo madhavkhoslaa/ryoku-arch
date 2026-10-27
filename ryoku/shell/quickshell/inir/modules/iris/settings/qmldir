@@ -12,5 +12,6 @@ IrisLinkCard 1.0 IrisLinkCard.qml
 IrisWallpaperCard 1.0 IrisWallpaperCard.qml
 IrisAboutPage 1.0 IrisAboutPage.qml
 IrisGameModeCard 1.0 IrisGameModeCard.qml
+IrisPluginsCard 1.0 IrisPluginsCard.qml
 SettingsNativeDialogGuard 1.0 SettingsNativeDialogGuard.qml
 SettingsPageHost 1.0 SettingsPageHost.qml

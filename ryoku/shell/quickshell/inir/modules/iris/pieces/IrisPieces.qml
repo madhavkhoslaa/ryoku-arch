@@ -6,6 +6,7 @@ import QtQuick
 import inir.services
 import inir.services.deferred
 import inir.modules.common
+import shell.services as Ryoku
 
 QtObject {
     id: root
@@ -58,6 +59,7 @@ QtObject {
     readonly property var cardIds: root.extras.filter(piece => piece.card).map(piece => piece.id)
     readonly property string defaultPlace: "right"
     function labelOf(id: string): string {
+        if (root.isPlugin(id)) return Ryoku.GlyphPlugins.name(root.pluginIdOf(id))
         return root.slots.concat(root.extras).find(piece => piece.id === id)?.label ?? id
     }
 
@@ -194,6 +196,7 @@ QtObject {
         if (id === "updates") return Updates.available
         if (id === "vpn") return Vpn.available
         if (id === "watching") return AnimeWatch.available
+        if (root.isPlugin(id)) return Ryoku.GlyphPlugins.isShown(root.pluginIdOf(id))
         return root.extraIds.includes(id)
     }
     // What a piece needs from outside iNiR, as one line for the moment its
@@ -312,6 +315,61 @@ QtObject {
     function removeApp(appId: string): void {
         root.writeApps(root.apps.filter(entry => entry && entry.appId && entry.appId !== appId)
             .map(entry => Object.assign({}, entry)))
+    }
+
+    // A Ryoku bar plugin (manifest host topbarGlyph) the Island carries as "plugin:<id>" in bar.pieces. It rides
+    // the Island only, never floats, and opens its panel as a card when it ships one. Settings › Plugins lists them.
+    readonly property string pluginPrefix: "plugin:"
+    function isPlugin(id: string): bool {
+        const s = String(id ?? "")
+        return s.startsWith(root.pluginPrefix) && /^[a-z0-9][a-z0-9-]*$/.test(s.slice(root.pluginPrefix.length))
+    }
+    function pluginIdOf(id: string): string { return String(id).slice(root.pluginPrefix.length) }
+    function pluginPieceId(pluginId: string): string { return root.pluginPrefix + pluginId }
+    function pluginCard(id: string): bool { return root.isPlugin(id) && Ryoku.GlyphPlugins.hasPanel(root.pluginIdOf(id)) }
+    // a carried piece the Island draws: a built-in extra or a plugin
+    function carriable(id: string): bool { return root.extraIds.includes(id) || root.isPlugin(id) }
+    function pluginCarried(pluginId: string): bool { return root.listedOnIsland(root.pluginPieceId(pluginId)) }
+    // Where a plugin shows, one place at a time: "bar" (its piece in bar.pieces, above, opening its panel as a
+    // card), "home" (the Island's home page), "controls" (Control Center), "left" or "right" (the side panels).
+    // plugins.places remembers the place even while the plugin is switched off (plugins.off), so switching it back
+    // on returns it there; a plugin never placed is off and starts on the Island.
+    readonly property var pluginPlaceIds: ["bar", "home", "controls", "left", "right"]
+    readonly property var pluginPlaces: Config.options?.iris?.plugins?.places ?? ({})
+    readonly property var pluginsOff: Array.from(Config.options?.iris?.plugins?.off ?? []).map(id => String(id))
+    function pluginPlace(pluginId: string): string {
+        if (root.pluginCarried(pluginId)) return "bar"
+        const place = String(Array.from(root.pluginPlaces[pluginId] ?? [])[0] ?? "")
+        return root.pluginPlaceIds.includes(place) ? place : "bar"
+    }
+    function pluginEnabled(pluginId: string): bool {
+        return !root.pluginsOff.includes(pluginId)
+            && (root.pluginCarried(pluginId) || root.pluginPlaces[pluginId] !== undefined)
+    }
+    function writePlugin(pluginId: string, place: string, on: bool): void {
+        const id = root.pluginPieceId(pluginId)
+        const pieces = Array.from(Config.options?.iris?.bar?.pieces ?? []).map(entry => String(entry)).filter(entry => entry !== id)
+        if (on && place === "bar") pieces.push(id)
+        const places = Object.assign({}, root.pluginPlaces)
+        places[pluginId] = [place]
+        const off = root.pluginsOff.filter(entry => entry !== pluginId)
+        if (!on) off.push(pluginId)
+        const updates = { "iris.bar.pieces": pieces, "iris.plugins.places": places, "iris.plugins.off": off }
+        // home page plugins live in its Modules block: placing one there switches that block on
+        const blocks = Array.from(Config.options?.iris?.bar?.desktopBlocks ?? ["profile", "context", "forecast", "agenda", "modules"])
+        if (on && place === "home" && !blocks.includes("modules")) updates["iris.bar.desktopBlocks"] = blocks.concat(["modules"])
+        Config.setNestedValues(updates)
+    }
+    function setPluginPlace(pluginId: string, place: string): void {
+        if (root.pluginPlaceIds.includes(place)) root.writePlugin(pluginId, place, root.pluginEnabled(pluginId))
+    }
+    function setPluginEnabled(pluginId: string, on: bool): void {
+        root.writePlugin(pluginId, root.pluginPlace(pluginId), on)
+    }
+    // the shown, switched-on plugins with a panel placed somewhere, in the order they were placed
+    function pluginsIn(place: string): var {
+        return Object.keys(root.pluginPlaces).filter(id => Array.from(root.pluginPlaces[id] ?? []).includes(place)
+            && !root.pluginsOff.includes(id) && Ryoku.GlyphPlugins.isShown(id) && Ryoku.GlyphPlugins.hasPanel(id))
     }
 
     function configPath(id: string): string {

@@ -9,10 +9,12 @@ import Quickshell
 // independent of the accent. brand/verm are the live accent (the palette
 // primary); sun/gold are the fixed brand marks.
 Singleton {
+    // A bar style that hosts plugins on its own surface may override the shape
+    // and type tokens below through HostTheme; unset, they keep these defaults.
     // accent family: the live system accent (palette primary), with lit/deep
     // variants tinted off it. brand + verm are the accent under their historical
     // names, so existing plugin content follows the theme with no change.
-    readonly property color accent:   Scheme.accent
+    readonly property color accent:   HostTheme.pick(HostTheme.accent, Scheme.accent)
     readonly property color brand:    Scheme.accent
     readonly property color verm:     brand
     readonly property color vermLit:  Qt.lighter(Scheme.accent, 1.22)
@@ -23,22 +25,22 @@ Singleton {
     // text ramp, resolved from the palette so a plugin's copy reads on the themed
     // card in light and dark alike.
     readonly property color cream:    Scheme.onSurface
-    readonly property color bright:   Scheme.onSurface
-    readonly property color dim:      Scheme.onSurfaceVariant
+    readonly property color bright:   HostTheme.pick(HostTheme.bright, Scheme.onSurface)
+    readonly property color dim:      HostTheme.pick(HostTheme.dim, Scheme.onSurfaceVariant)
     // card surface, from the palette depth ramp. panelTop/panelBot are the Card
     // gradient stops (aliases of cardTop/cardBot).
     readonly property color cardTop:  Scheme.base
     readonly property color cardBot:  Scheme.deep
     readonly property color panelTop: cardTop
     readonly property color panelBot: cardBot
-    readonly property color border:   Scheme.line
+    readonly property color border:   HostTheme.pick(HostTheme.border, Scheme.line)
     readonly property color lineStrong: Qt.rgba(bright.r, bright.g, bright.b, 0.40)
     readonly property color shadow:   "#000000"
-    readonly property color tileBg:   Scheme.elevated
+    readonly property color tileBg:   HostTheme.pick(HostTheme.tileBg, Scheme.elevated)
     readonly property color subtle:   Scheme.onSurface
     readonly property color faint:    Scheme.onSurfaceVariant
     readonly property color iconDim:  Scheme.onSurfaceVariant
-    readonly property color hair:     Qt.rgba(bright.r, bright.g, bright.b, 0.12)
+    readonly property color hair:     HostTheme.pick(HostTheme.hair, Qt.rgba(bright.r, bright.g, bright.b, 0.12))
     readonly property color sheen:    Qt.rgba(bright.r, bright.g, bright.b, 0.06)
     // ember tones for the flame gradients: warm browns of the fixed RASHIN
     // identity, held independent of the accent.
@@ -69,11 +71,11 @@ Singleton {
     readonly property color creamMenu:   Qt.rgba(bright.r, bright.g, bright.b, 0.82)
     readonly property real shadowOpacity: 0.5
     // type stack + brutalist geometry, the website language.
-    readonly property string display: "Fraunces"
-    readonly property string font: "Space Grotesk"
+    readonly property string display: HostTheme.display !== "" ? HostTheme.display : "Fraunces"
+    readonly property string font: HostTheme.font !== "" ? HostTheme.font : "Space Grotesk"
     readonly property string fontJp: "Noto Sans CJK JP"
     readonly property string mono: "JetBrainsMono Nerd Font"
-    readonly property int radius: 0
+    readonly property int radius: HostTheme.radius >= 0 ? HostTheme.radius : 0
     readonly property real border2: 1
     readonly property int shadowStep: 6
 

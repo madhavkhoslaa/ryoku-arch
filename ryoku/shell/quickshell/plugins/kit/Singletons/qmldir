@@ -2,3 +2,4 @@ singleton Theme Theme.qml
 singleton Config Config.qml
 singleton Motion Motion.qml
 singleton Scheme Scheme.qml
+singleton HostTheme HostTheme.qml

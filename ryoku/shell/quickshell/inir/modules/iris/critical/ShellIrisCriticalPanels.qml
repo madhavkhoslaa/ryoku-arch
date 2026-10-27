@@ -5,11 +5,15 @@ import Quickshell
 import inir.modules.common
 import inir.modules.iris.bar
 import inir.modules.iris.frame
+import inir.modules.iris.style
 import inir.modules.closeConfirm
 import inir.modules.regionSelector
 
 Item {
     id: root
+
+    // Ryoku plugins take Shima's corners, faces and ink from the first frame the Island draws.
+    IrisPluginTheme {}
 
     component CriticalPanelLoader: LazyLoader {
         required property string identifier

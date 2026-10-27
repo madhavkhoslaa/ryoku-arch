@@ -55,7 +55,7 @@ Item {
     function usable(kind: string): bool {
         if (kind === "island" || kind === "window" || kind === "time" || kind === "|") return true
         if (kind === "workspaces") return (WorkspaceService.allWorkspaces?.length ?? 0) > 0 && !zones.taken(kind)
-        return IrisPieces.extraIds.includes(kind) && IrisPieces.available(kind) && !zones.taken(kind)
+        return IrisPieces.carriable(kind) && IrisPieces.available(kind) && !zones.taken(kind)
     }
     readonly property var entries: {
         const seen = []
@@ -222,6 +222,7 @@ Item {
                 open: zones.island.pieceOpen(piece.kind, piece)
                 hovered: pieceHover.hovered
                 pressed: pieceTap.pressed
+                onPluginPanelRequested: zones.island.activatePiece(piece.kind, piece)
             }
             HoverHandler { id: pieceHover; cursorShape: Qt.PointingHandCursor }
             TapHandler {

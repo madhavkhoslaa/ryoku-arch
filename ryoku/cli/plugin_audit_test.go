@@ -80,6 +80,8 @@ func TestAuditRules(t *testing.T) {
 
 		{"internal-import-pos", "internal-import", true, map[string]string{"content/W.qml": "import shell.services\nItem {}\n"}, "", true},
 		{"internal-import-neg", "internal-import", true, map[string]string{"content/W.qml": "import QtQuick\nItem {}\n"}, "", false},
+		{"host-theme-pos", "internal-import", true, map[string]string{"content/W.qml": "import Ryoku.PluginKit.Singletons\nItem { Component.onCompleted: HostTheme.radius = 20 }\n"}, "", true},
+		{"host-theme-neg", "internal-import", true, map[string]string{"content/W.qml": "import Ryoku.PluginKit.Singletons\nItem { width: Theme.radius }\n"}, "", false},
 
 		{"config-write-pos", "config-write", true, map[string]string{"content/W.qml": "property string p: \"shell.json\"\n"}, "", true},
 		{"config-write-neg", "config-write", true, map[string]string{"content/W.qml": "property string p: \"data.json\"\n"}, "", false},

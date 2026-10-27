@@ -67,6 +67,7 @@ var (
 	importShellRe  = regexp.MustCompile(`^\s*import\s+shell\.`)
 	importUiRe     = regexp.MustCompile(`^\s*import\s+Ryoku\.Ui`)
 	importRelRe    = regexp.MustCompile(`^\s*import\s+"(\.\./[^"]*)"`)
+	hostThemeRe    = regexp.MustCompile(`\bHostTheme\b`)
 	secretRe       = regexp.MustCompile(`(?:sk|ghp|gho|xox[abp])-[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY`)
 	cmdArrayRe     = regexp.MustCompile(`command\s*:\s*\[\s*([^,\]\n]+)`)
 	execDetachedRe = regexp.MustCompile(`execDetached\s*\(\s*\[\s*([^,\]\n]+)`)
@@ -233,6 +234,10 @@ func auditFile(p string, content []byte, am auditManifest, add func(rule, p stri
 				if mm := importRelRe.FindStringSubmatch(code); mm != nil && importEscapes(p, mm[1]) {
 					add("internal-import", p, line, i18n.T("a relative import climbs out of the plugin folder (R4)"))
 				}
+			}
+			// HostTheme is the hosting bar style's override of the kit Theme; a plugin reads Theme only.
+			if hostThemeRe.MatchString(code) {
+				add("internal-import", p, line, i18n.T("uses HostTheme, which only the bar style hosting the plugin may set (R4)"))
 			}
 		}
 

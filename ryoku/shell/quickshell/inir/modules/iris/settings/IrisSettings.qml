@@ -39,7 +39,7 @@ Item {
     // Sources and More Settings sit in a footer under the list, always in view.
     readonly property int footerCluster: 5
     // Latin names the section, the kanji seals it - the Ryoku nav language.
-    readonly property var jpName: ({ general: "一般", appearance: "外観", motion: "動", bar: "島", bubbles: "泡",
+    readonly property var jpName: ({ general: "一般", appearance: "外観", motion: "動", bar: "島", bubbles: "泡", plugins: "拡張",
         dock: "台座", desktop: "卓上", sidebars: "側面", controlCenter: "御", spotlight: "探索",
         notifications: "報", sound: "音", display: "画面", battery: "電",
         gaming: "遊", player: "再生", frameMusic: "律", anime: "映", sources: "源" })
@@ -862,6 +862,10 @@ Item {
 
                             IrisGameModeCard {
                                 visible: root.browsing && root.section === "gaming"
+                            }
+
+                            IrisPluginsCard {
+                                visible: root.browsing && root.section === "plugins"
                             }
 
                             IrisWallpaperCard {

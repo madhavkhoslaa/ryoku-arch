@@ -188,6 +188,8 @@ ColumnLayout {
     readonly property var customModules: ["left", "center", "right"]
         .reduce((all, slot) => all.concat(page.island.options?.[slot + "Modules"] ?? []), [])
         .filter(id => String(id).startsWith("custom:"))
+    // Ryoku plugins placed on this page share the Modules block with the SDK's modules
+    readonly property var homePlugins: IrisPieces.pluginsIn("home")
     readonly property bool weatherReady: Weather.enabled && !String(Weather.data?.temp ?? "--").startsWith("--")
     readonly property string bannerSource: String(page.island.options?.desktopBanner ?? "wallpaper") === "wallpaper"
         ? WallpaperListener.wallpaperUrlForScreen(page.island.targetScreen) : ""
@@ -201,7 +203,7 @@ ColumnLayout {
     readonly property real bannerBlur: page.bannerPart("desktopBannerBlur", 0)
     function blockAvailable(kind: string): bool {
         if (kind === "context") return page.focusedWindow !== null || page.workspaces.length > 1
-        if (kind === "modules") return page.customModules.length > 0
+        if (kind === "modules") return page.customModules.length > 0 || page.homePlugins.length > 0
         if (kind === "forecast") return page.weatherReady && page.hours.length > 1
         if (kind === "agenda") return page.nextEvent !== null || page.pendingTasks > 0
         return page.island.desktopBlockKinds.includes(kind)
@@ -927,7 +929,7 @@ ColumnLayout {
             anchors.right: parent.right
             anchors.rightMargin: page.island.studio ? page.island.studioHandlesWidth : 0
             enabled: !page.island.studio
-            visible: page.customModules.length > 0
+            visible: page.customModules.length > 0 || page.homePlugins.length > 0
             spacing: 6 * IrisStyle.density
             Repeater {
                 model: page.customModules
@@ -936,6 +938,17 @@ ColumnLayout {
                     widgetId: modelData.slice("custom:".length)
                     targetScreen: page.island.targetScreen
                     slot: "island.desktop"
+                }
+            }
+            // Ryoku plugins placed on the home page (Settings › Plugins): each one's panel, the block's full width.
+            Repeater {
+                model: page.homePlugins
+                IrisPluginPanel {
+                    required property string modelData
+                    width: modulesBlock.width - modulesBlock.anchors.rightMargin
+                    pluginId: modelData
+                    s: IrisStyle.density
+                    active: page.visible
                 }
             }
         }

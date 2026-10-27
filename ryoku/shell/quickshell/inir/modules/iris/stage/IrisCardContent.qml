@@ -79,7 +79,7 @@ Item {
             case "anime": return animeCard
             case "watching": return watchingCard
             case "vpn": return vpnCard
-            default: return null
+            default: return IrisPieces.isPlugin(root.kind) ? pluginCard : null
             }
         }
     }
@@ -603,6 +603,16 @@ Item {
             }
         }
     }
+    // A Ryoku bar plugin's panel, reading the same pluginApi, and so the same service, as its mark on the Island.
+    Component {
+        id: pluginCard
+        IrisPluginPanel {
+            pluginId: IrisPieces.pluginIdOf(root.kind)
+            s: root.d
+            active: root.contentActive
+        }
+    }
+
     Component {
         id: vpnCard
         ColumnLayout {

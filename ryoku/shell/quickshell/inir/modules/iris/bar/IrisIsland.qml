@@ -671,7 +671,7 @@ Item {
         if (root.auxiliary === "tray" && root.trayAppsFace && !root.floatsAlone("tray")
                 && !root.floatingSlots.includes("utility") && !carried.includes("tray"))
             carried.push("tray")
-        return carried.filter(kind => IrisPieces.extraIds.includes(kind) && IrisPieces.available(kind) && !root.pieceTaken(kind))
+        return carried.filter(kind => IrisPieces.carriable(kind) && IrisPieces.available(kind) && !root.pieceTaken(kind))
     }
     readonly property real barPieceSize: Math.round(root.compactHeight - 10 * root.d)
     readonly property real barPieceGap: Math.round(6 * root.d)
@@ -894,7 +894,7 @@ Item {
         GlobalStates.quietIrisLevels()
         root.stepLevel(level === "mic" ? "mic" : "volume", steps)
     }
-    readonly property var cardKinds: IrisPieces.cardIds
+    readonly property var cardKinds: IrisPieces.cardIds.concat(root.barPieces.filter(kind => IrisPieces.pluginCard(kind)))
     readonly property bool opensCards: String(Config.options?.iris?.bubbles?.opens ?? "card") === "card"
     function toggleBubbleCard(kind: string, part, source: string): void {
         if (GlobalStates.irisBubbleCard?.source === source) { GlobalStates.irisBubbleCard = null; return }
@@ -920,6 +920,7 @@ Item {
                 GlobalStates.irisBubbleCardRequest = ""
                 if (!root.cardKinds.includes(kind)) return
                 root.expanded = false
+                if (IrisPieces.isPlugin(kind)) { root.activatePiece(kind, null); return }
                 const piece = root.pieceItem(kind)
                 if (piece) { root.toggleBubbleCard(kind, piece, "island-piece-" + kind); return }
                 const part = [leftSatellite, rightSatellite, auxiliarySatellite].find(s => s.visible && s.kind === kind)
@@ -963,6 +964,13 @@ Item {
         return kind === "controls" && root.focusedOutput && GlobalStates.controlPanelOpen && !root.expanded
     }
     function activatePiece(kind: string, part): void {
+        // A plugin has no page or bubble of its own: its panel is always a card, whatever bubbles open, and it
+        // grows from the Island's body so it sits centred under the Island. The source stays the piece's, so the
+        // piece reads open while its card shows.
+        if (IrisPieces.isPlugin(kind)) {
+            if (IrisPieces.pluginCard(kind)) root.toggleBubbleCard(kind, chassis, "island-piece-" + kind)
+            return
+        }
         if (root.opensCards && root.cardKinds.includes(kind) && part) {
             root.toggleBubbleCard(kind, part, "island-piece-" + kind)
             return
@@ -2058,6 +2066,7 @@ Item {
                             plated: true
                             hovered: pieceHover.hovered
                             pressed: pieceGrip.pressed
+                            onPluginPanelRequested: root.activatePiece(barPiece.modelData, barPiece)
                         }
                         HoverHandler {
                             id: pieceHover
@@ -2074,8 +2083,9 @@ Item {
                             kind: barPiece.modelData
                             screenName: root.targetScreen?.name ?? ""
                             screenOffsetY: root.screenOffsetY
-                            holdLifts: !GlobalStates.irisEdit
-                            pullDistance: GlobalStates.irisEdit ? 6 * root.d : 0
+                            // a plugin rides the Island only, so it is never carried off to float
+                            holdLifts: !GlobalStates.irisEdit && !IrisPieces.isPlugin(barPiece.modelData)
+                            pullDistance: GlobalStates.irisEdit && !IrisPieces.isPlugin(barPiece.modelData) ? 6 * root.d : 0
                             onTapped: {
                                 if (GlobalStates.irisEdit) {
                                     GlobalStates.irisEditSelection = ""

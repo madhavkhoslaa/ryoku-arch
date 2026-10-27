@@ -13,6 +13,7 @@ import inir.modules.common.functions
 import inir.modules.common.widgets
 import inir.modules.iris.components
 import inir.modules.iris.style
+import inir.modules.iris.pieces
 
 Loader {
     id: root
@@ -35,7 +36,7 @@ Loader {
         case "focus": return focusComponent
         case "mixer": return mixerComponent
         case "system": return systemComponent
-        default: return null
+        default: return IrisPieces.isPlugin(root.kind) ? pluginComponent : null
         }
     }
 
@@ -1210,6 +1211,23 @@ Loader {
                         onClicked: if (stream.modelData?.audio) stream.modelData.audio.muted = !stream.muted
                     }
                 }
+            }
+        }
+    }
+
+    // A Ryoku bar plugin placed on this side: its panel under its name, as a section that stays open.
+    Component {
+        id: pluginComponent
+        Section {
+            expandable: false
+            title: IrisPieces.labelOf(root.kind)
+            glyph: "extension"
+            tint: IrisStyle.identity.sky
+            IrisPluginPanel {
+                Layout.fillWidth: true
+                pluginId: IrisPieces.pluginIdOf(root.kind)
+                s: root.d
+                active: root.contentActive
             }
         }
     }

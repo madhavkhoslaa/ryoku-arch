@@ -20,6 +20,7 @@ singleton Audio Audio.qml
 singleton Equalizer Equalizer.qml
 singleton Tray Tray.qml
 singleton Dock Dock.qml
+singleton GlyphPlugins GlyphPlugins.qml
 singleton DockPreview DockPreview.qml
 singleton MusicPreview MusicPreview.qml
 singleton BarProducts BarProducts.qml
